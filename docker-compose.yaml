@@ -1,0 +1,27 @@
+
+services:
+  database:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345678
+    ports:
+      - "5431:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  booking-service:
+    build: ./booking-service
+    ports:
+      - "3001:3001"
+    depends_on:
+      - database
+
+  payment-service:
+    build: ./payment-service
+    ports:
+      - "3002:3002"
+
+volumes:
+  pgdata:

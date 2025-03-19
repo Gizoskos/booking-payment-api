@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-sql
+data:
+  init.sql: |
+    -- Eğer booking_db veritabanı varsa silme, sadece varsa bildirim yap
+    DO $$ 
+    BEGIN
+        IF EXISTS (SELECT FROM pg_database WHERE datname = 'booking_db') THEN
+            RAISE NOTICE 'Database booking_db already exists';
+        ELSE
+            CREATE DATABASE booking_db;
+        END IF;
+    END $$;
+
+    -- Veritabanına bağlan
+    \c booking_db;
+
+    -- Payments tablosunu oluştur
+    CREATE TABLE IF NOT EXISTS payments (
+      id SERIAL PRIMARY KEY,
+      user_id INT NOT NULL,
+      amount DECIMAL(10,2) NOT NULL,
+      createdAt TIMESTAMP DEFAULT NOW(),
+      updatedAt TIMESTAMP DEFAULT NOW()
+    );
+
+    -- Bookings tablosunu oluştur (Foreign Key ile)
+    CREATE TABLE IF NOT EXISTS bookings (
+      id SERIAL PRIMARY KEY,
+      user_id INT NOT NULL,
+      payment_id INT NOT NULL,
+      createdAt TIMESTAMP DEFAULT NOW(),
+      updatedAt TIMESTAMP DEFAULT NOW(),
+      CONSTRAINT fk_payment FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE CASCADE
+    );
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-db
+spec:
+  replicas: 1 # Tek instance yeterli
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:latest
+          env:
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "12345678"
+            - name: POSTGRES_DB
+              value: "booking_db"
+          ports:
+            - containerPort: 5431
+          volumeMounts:
+            - name: init-db
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: init-db
+          configMap:
+            name: postgres-init-sql
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5431
+      targetPort: 5431
