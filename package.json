@@ -1,18 +1,19 @@
 {
-  "name": "payment-service",
+  "name": "booking-payment-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "API for booking and payment services with Kubernetes and Docker support",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "echo 'Use individual service start scripts'",
+    "docker-compose-up": "docker-compose up -d",
+    "docker-compose-down": "docker-compose down"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "pg": "^8.14.1"
-  }
+    "docker-compose": "^1.29.2",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0"
+  },
+  "author": "",
+  "license": "ISC"
 }

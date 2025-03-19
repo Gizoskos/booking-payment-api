@@ -1,41 +1,25 @@
 apiVersion: v1
-kind: ConfigMap
+kind: PersistentVolume
 metadata:
-  name: postgres-init-sql
-data:
-  init.sql: |
-    -- Eğer booking_db veritabanı varsa silme, sadece varsa bildirim yap
-    DO $$ 
-    BEGIN
-        IF EXISTS (SELECT FROM pg_database WHERE datname = 'booking_db') THEN
-            RAISE NOTICE 'Database booking_db already exists';
-        ELSE
-            CREATE DATABASE booking_db;
-        END IF;
-    END $$;
-
-    -- Veritabanına bağlan
-    \c booking_db;
-
-    -- Payments tablosunu oluştur
-    CREATE TABLE IF NOT EXISTS payments (
-      id SERIAL PRIMARY KEY,
-      user_id INT NOT NULL,
-      amount DECIMAL(10,2) NOT NULL,
-      createdAt TIMESTAMP DEFAULT NOW(),
-      updatedAt TIMESTAMP DEFAULT NOW()
-    );
-
-    -- Bookings tablosunu oluştur (Foreign Key ile)
-    CREATE TABLE IF NOT EXISTS bookings (
-      id SERIAL PRIMARY KEY,
-      user_id INT NOT NULL,
-      payment_id INT NOT NULL,
-      createdAt TIMESTAMP DEFAULT NOW(),
-      updatedAt TIMESTAMP DEFAULT NOW(),
-      CONSTRAINT fk_payment FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE CASCADE
-    );
-
+  name: postgres-pv
+spec:
+  capacity:
+    storage: 5Gi # Veritabanı için gerekli depolama alanı
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data/postgres # Bu, host makinenin yerel dizini
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -64,10 +48,15 @@ spec:
           ports:
             - containerPort: 5431
           volumeMounts:
-            - name: init-db
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+            - name: init-sql-volume
               mountPath: /docker-entrypoint-initdb.d
       volumes:
-        - name: init-db
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+        - name: init-sql-volume
           configMap:
             name: postgres-init-sql
 
@@ -82,4 +71,32 @@ spec:
   ports:
     - protocol: TCP
       port: 5431
-      targetPort: 5431
+      targetPort: 5432
+      nodePort: 32000
+  type: NodePort
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-sql
+data:
+  init.sql: |
+    -- SQL commands to create the database and tables
+    CREATE DATABASE IF NOT EXISTS booking_db;
+    \c booking_db;
+    CREATE TABLE IF NOT EXISTS payments (
+      id SERIAL PRIMARY KEY,
+      user_id INT NOT NULL,
+      amount DECIMAL(10, 2) NOT NULL,
+      createdAt TIMESTAMP DEFAULT NOW(),
+      updatedAt TIMESTAMP DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS bookings (
+      id SERIAL PRIMARY KEY,
+      user_id INT NOT NULL,
+      payment_id INT NOT NULL,
+      createdAt TIMESTAMP DEFAULT NOW(),
+      updatedAt TIMESTAMP DEFAULT NOW(),
+      CONSTRAINT fk_payment FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE CASCADE
+    );

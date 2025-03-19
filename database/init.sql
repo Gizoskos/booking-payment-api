@@ -1,5 +1,5 @@
 -- Booking-Service ve Payment-Service için veritabanını kullan
-\ c postgres;
+\c postgres;
 -- Eğer veritabanı varsa sil
 -- Eğer veritabanı zaten varsa, işlemi atla
 DO $$ BEGIN IF EXISTS (
@@ -10,7 +10,7 @@ DO $$ BEGIN IF EXISTS (
 ELSE CREATE DATABASE booking_db;
 END IF;
 END $$ -- Veritabanına bağlan
-\ c booking_db;
+\c booking_db;
 -- Payments tablosunu oluştur
 CREATE TABLE payments (
   id SERIAL PRIMARY KEY,
