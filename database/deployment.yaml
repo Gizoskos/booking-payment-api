@@ -83,8 +83,14 @@ metadata:
 data:
   init.sql: |
     -- SQL commands to create the database and tables
-    CREATE DATABASE IF NOT EXISTS booking_db;
-    \c booking_db;
+    DO $$ 
+    BEGIN
+        IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'booking_db') THEN
+            PERFORM dblink_exec('dbname=postgres', 'CREATE DATABASE booking_db');
+        END IF;
+    END $$;
+
+    -- Now connect to the 'booking_db' and create tables
     CREATE TABLE IF NOT EXISTS payments (
       id SERIAL PRIMARY KEY,
       user_id INT NOT NULL,
@@ -92,6 +98,7 @@ data:
       createdAt TIMESTAMP DEFAULT NOW(),
       updatedAt TIMESTAMP DEFAULT NOW()
     );
+
     CREATE TABLE IF NOT EXISTS bookings (
       id SERIAL PRIMARY KEY,
       user_id INT NOT NULL,
