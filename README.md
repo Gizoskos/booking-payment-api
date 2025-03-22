@@ -1,7 +1,7 @@
-###**Booking-Payment-API Project**
+### **Booking-Payment-API Project**
 This project is built to demonstrate the use of Kubernetes and Docker for deploying and managing a microservices architecture. The system includes a booking service and a payment service, both backed by a PostgreSQL database. The project is designed to showcase how Kubernetes can handle service orchestration, scaling, and database persistence in a containerized environment.
 
-##**Prerequisites**
+## **Prerequisites**
 Before running the project, ensure you have the following tools installed:
 
 Docker (for containerization)
@@ -14,7 +14,7 @@ kubectl (Kubernetes CLI)
 
 pgAdmin (for managing PostgreSQL databases)
 
-##**Project Setup**
+## **Project Setup**
 Step 1: Clone the Repository
 Clone this repository to your local machine using:
 
@@ -47,7 +47,7 @@ Install dependencies:
 bash
 Copy
 npm install
-##**For Database Initialization:**
+## **For Database Initialization:**
 Navigate to the database folder and ensure the necessary init.sql file exists for database initialization.
 
 Step 3: Start the Services with Docker Compose
@@ -179,7 +179,7 @@ Node.js & Express: Backend framework for building RESTful APIs.
 
 Docker Compose: For managing multi-container Docker applications.
 
-###**Conclusion**
+### **Conclusion**
 This project serves as a demonstration of how to deploy microservices in a Kubernetes environment, using Docker containers for packaging the services and a PostgreSQL database. The project emphasizes database persistence, scaling, and inter-service communication.
 
 Feel free to fork and modify the project according to your needs!
