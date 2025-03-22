@@ -22,6 +22,7 @@ bash
 Copy
 git clone https://github.com/yourusername/booking-payment-api.git
 cd booking-payment-api
+
 Step 2: Install Dependencies
 Each microservice has its own set of dependencies. You can install them by running the following commands for each service.
 
